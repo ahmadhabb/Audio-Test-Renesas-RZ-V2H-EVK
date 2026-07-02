@@ -1,0 +1,43 @@
+# ============================================================
+# Audio Test RZ/V2H  -  .gitignore
+# ============================================================
+
+# --- Rekaman & audio hasil tes (bukan sumber) ---
+*.wav
+*.raw
+*.pcm
+rekaman_*.wav
+gadget-mic-test.wav
+
+# --- Log ---
+*.log
+alsaloop.log
+
+# --- Claude Code (setelan lokal per-mesin) ---
+.claude/settings.local.json
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- OS junk ---
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# --- Temp ---
+*.tmp
+/scratch/
+/tmp/
+
+# ============================================================
+# CATATAN: modul kernel (*.ko) di usb-audio-modules/ dan
+# usb-gadget-modules/ SENGAJA di-commit (prebuilt untuk kernel
+# 6.1.141-cip43-yocto-standard) agar bisa langsung deploy tanpa
+# build ulang. Kalau Anda lebih suka menganggapnya artefak build
+# dan tidak melacaknya, hapus komentar baris di bawah:
+# ------------------------------------------------------------
+# *.ko
+# usb-audio-modules/evk_kernel_config
