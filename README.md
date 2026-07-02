@@ -223,5 +223,4 @@ Audio Test RZ v2h/
 - **Onboard audio (DA7213) is dead** — an SSI clock `-110` bug in the BSP, out of scope for this project.
 - **Mode B is one-way** (mic only) due to the USBHS isochronous-endpoint limit.
 - Modules are built with gcc 15 vs the kernel's gcc 13.4; this is safe because `MODVERSIONS` is off (only `vermagic` is validated).
-#   A u d i o - T e s t - R e n e s a s - R Z - V 2 H - E V K  
- 
+#
