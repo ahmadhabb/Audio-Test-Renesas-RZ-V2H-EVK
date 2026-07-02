@@ -9,9 +9,9 @@ Two working, verified modes:
 | Mode | Direction | EVK role | Result |
 |------|-----------|----------|--------|
 | **A. USB Mic → PC** | A USB mic plugged into the EVK, its audio streamed to the PC | USB **host** | PC plays/records sound from the "ME6S" mic |
-| **B. EVK → USB Mic on PC** | The EVK itself appears as a USB microphone | USB **device/gadget** | PC sees "Microphone (Source/Sink)" |
+| **B. EVK → USB Mic on PC** | The EVK itself appears as a USB microphone | USB **device/gadget** | PC sees "Microphone (moilmeet)" |
 
-> A deep technical write-up is in [LAPORAN.md](LAPORAN.md).
+> A deep technical write-up is in [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md).
 
 ---
 
@@ -56,7 +56,7 @@ Two working, verified modes:
    └───────────────────────────────────────────────┘
 
    ┌──────────────── MODE B ───────────────────────┐
-   │  ME6S mic → EVK → (UAC2 gadget on CN2) ─USB→ PC "Microphone (Source/Sink)" │
+   │  ME6S mic → EVK → (UAC2 gadget on CN2) ─USB→ PC "Microphone (moilmeet)" │
    └───────────────────────────────────────────────┘
 ```
 
@@ -152,7 +152,7 @@ On the PC, select the recording device **"Microphone (moilmeet)"** (USB `1d6b:4d
 
 ## 6. Rebuilding the modules (WSL2)
 
-Only needed if the kernel changes or the modules are lost. Condensed (details in [LAPORAN.md](LAPORAN.md)):
+Only needed if the kernel changes or the modules are lost. Condensed (details in [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md)):
 
 ```bash
 # in WSL2 Ubuntu
@@ -183,7 +183,7 @@ Kernel source: `renesas-rz/rz_linux-cip` @ `rz-6.1-cip43` (SRCREV `6717c06…`).
 ```
 Audio Test RZ v2h/
 ├─ README.md                 ← this document
-├─ LAPORAN.md                ← detailed technical report
+├─ TECHNICAL_REPORT.md       ← detailed technical report
 ├─ .gitignore
 │
 ├─ usb-mic-test.sh           ← Mode A CLI (check/load/stream/latency/record/level/stopdev)
@@ -223,5 +223,3 @@ Audio Test RZ v2h/
 - **Onboard audio (DA7213) is dead** — an SSI clock `-110` bug in the BSP, out of scope for this project.
 - **Mode B is one-way** (mic only) due to the USBHS isochronous-endpoint limit.
 - Modules are built with gcc 15 vs the kernel's gcc 13.4; this is safe because `MODVERSIONS` is off (only `vermagic` is validated).
-#   A u d i o - T e s t - R e n e s a s - R Z - V 2 H - E V K  
- 
