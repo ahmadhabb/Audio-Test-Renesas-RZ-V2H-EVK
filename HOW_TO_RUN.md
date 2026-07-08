@@ -206,6 +206,73 @@ ssh -i /c/Users/User/.ssh/evk_rzv2h -p 2222 weston@192.168.10.2
 
 ---
 
+## 5b. Run **Mode B (duplex)** — EVK as BOTH a USB mic AND a USB speaker "MoilMeet"
+
+The PC sees **two** devices at once: **"Microphone (MoilMeet)"** (EVK mic → PC) and
+**"Speakers (MoilMeet)"** (PC → EVK's USB speaker).
+
+**Why a special build:** USBHS on the RZ/V2H has only ~2 iso pipes. A normal UAC2
+capture is *async* and needs an extra feedback endpoint, so mic + speaker + feedback
+= 3 endpoints → the gadget fails to bind (`-19 couldn't find an available UDC`). The
+project's `usb-gadget-modules/usb_f_uac2.ko` is **rebuilt** with the capture default set
+to *adaptive* (`UAC2_DEF_CSYNC = USB_ENDPOINT_SYNC_ADAPTIVE` in `u_uac2.h`), which drops
+the feedback endpoint → mic + speaker = 2 endpoints → both fit.
+
+1. Plug into the **EVK USB-A ports**: the **ME6S mic** *and* your **USB speaker**.
+2. Plug the **micro-USB data cable** from EVK **CN2** into a PC USB port (as in Mode B).
+3. From Git Bash on the PC:
+
+   ```bash
+   cd "/c/habb/projects/Audio Test RZ v2h"
+   ./usb-gadget-duplex.sh up
+   ```
+
+   Successful output shows `UDC state = configured`, an auto-detected `mic source`
+   and `spk sink`, and `alsaloop procs = 2 (expect 2)`.
+
+4. Verify both endpoints are active on the PC (PowerShell):
+
+   ```powershell
+   Get-PnpDevice -Class AudioEndpoint | Where-Object { $_.FriendlyName -match 'MoilMeet' -and $_.Status -eq 'OK' } | Select Status,FriendlyName
+   # → Speakers (MoilMeet)  +  Microphone (MoilMeet)
+   ```
+
+5. In any app, pick **"Microphone (MoilMeet)"** for input and **"Speakers (MoilMeet)"**
+   for output. (To test the speaker: set it as the default playback device and play any
+   audio — it comes out of the USB speaker attached to the EVK.)
+
+**When done:** `./usb-gadget-duplex.sh down`
+
+**`usb-gadget-duplex.sh` subcommands:** `up` | `status` | `down`.
+Card auto-detect can be overridden with env vars, e.g.
+`MIC_CARD=plughw:2,0 SPK_CARD=plughw:1,0 ./usb-gadget-duplex.sh up`.
+
+### 5b-1. Audio quality (avoiding crackle)
+Duplex runs **two** `alsaloop` bridges that each cross an independent USB clock domain;
+with tiny default buffers they produce constant over/underruns → audible crackle. The
+script sets a **150 ms ring buffer** + **sample-shift sync** (`-t 150000 -S 2/3`), which
+takes steady-state xruns from thousands/sec to ≈0. If you still hear artifacts, raise the
+buffer (more latency, fewer xruns):
+```bash
+TLAT=300000 ./usb-gadget-duplex.sh up      # 300 ms
+```
+
+### 5b-2. Clean device name (removing the "N-" prefix)
+Windows shows a numeric prefix (e.g. "Speakers (3- MoilMeet)") when several **stale/ghost**
+MoilMeet device instances remain (one per past USB PID). To get a clean **"MoilMeet"** with
+no prefix, remove the ghosts, then reconnect:
+```powershell
+# run as Administrator (right-click → Run as administrator):
+powershell -ExecutionPolicy Bypass -File cleanup-moilmeet-devices.ps1
+```
+Then `./usb-gadget-duplex.sh down && ./usb-gadget-duplex.sh up`. The script `pnputil
+/remove-device`s every present+ghost MoilMeet node; the fresh gadget then enumerates as
+instance #1 → "Microphone (MoilMeet)" / "Speakers (MoilMeet)" with no prefix. (The script
+also tries to delete stale MMDevices registry keys; that step may report "access not
+allowed" and is safe to ignore — removing the devices is what matters.)
+
+---
+
 ## 6. Quick sequence summary
 
 ```text
@@ -217,6 +284,9 @@ PC ─▶ [Git Bash] ssh ... 'echo OK'          (confirm SSH works)
 Mode A:  ./usb-mic-test.sh load  ➜  ./usb-mic-test.sh stream
 Mode B:  (plug CN2 data)  ➜  ./usb-gadget-mic.sh up  ➜  pick "Microphone (moilmeet)" on the PC
          when done:  ./usb-gadget-mic.sh down
+Mode B duplex (mic+speaker):  (plug CN2 data + ME6S + USB speaker)
+         ➜  ./usb-gadget-duplex.sh up  ➜  pick "Microphone (MoilMeet)" + "Speakers (MoilMeet)"
+         when done:  ./usb-gadget-duplex.sh down
 ```
 
 ---
@@ -229,7 +299,11 @@ Mode B:  (plug CN2 data)  ➜  ./usb-gadget-mic.sh up  ➜  pick "Microphone (mo
 | `EVK not reachable` on `load`/`up` | PC IP / end1 IP not set, or Ethernet on the wrong port. Repeat Sections 1–2. |
 | Mode B: PC can't see "moilmeet" | CN2 not plugged / charge-only cable / plugged into CN12. Check `./usb-gadget-mic.sh status` → `UDC state`. |
 | Mode B: records but -91 dB (silence) | Quiet room — speak into the ME6S mic; test the gadget path with a tone: `speaker-test -D plughw:2,0 -c 1 -r 48000 -t sine -f 440`. |
-| Mode B: `up` fails / UDC error -19 | USBHS has only ~2 iso pipes; the gadget may use only 1 direction (mic = `p_` only). Already handled in the script. |
+| Mode B: `up` fails / UDC error -19 | USBHS has only ~2 iso pipes. Mic-only (`usb-gadget-mic.sh`) uses 1 direction. For mic+speaker together use `usb-gadget-duplex.sh` (its patched adaptive `usb_f_uac2.ko` drops the feedback endpoint so both fit). |
+| Duplex: `alsaloop procs` < 2, or one side silent | A source card wasn't detected. Check `./usb-gadget-duplex.sh status` (cards list), then force it, e.g. `SPK_CARD=plughw:1,0 MIC_CARD=plughw:2,0 ./usb-gadget-duplex.sh up`. |
+| Duplex: card numbers shift after replug/reboot | ME6S / USB-speaker / gadget cards are auto-detected by name each run, so numbers can move freely; only override with `MIC_CARD`/`SPK_CARD` if detection misses. |
+| Duplex: audio crackles / choppy | Cross-clock xruns. Script already uses `-t 150000 -S 2/3`; raise the buffer: `TLAT=300000 ./usb-gadget-duplex.sh up` (§5b-1). |
+| Windows name shows "3- MoilMeet" prefix | Stale/ghost device instances. Run `cleanup-moilmeet-devices.ps1` as Admin, then `down`+`up` (§5b-2). |
 | Everything gone after an EVK reboot | Normal — nothing persists. Repeat Sections 2–4. |
 
 ---
