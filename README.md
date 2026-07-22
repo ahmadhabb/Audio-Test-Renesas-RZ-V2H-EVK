@@ -12,9 +12,10 @@ Three working, verified modes:
 | **B. EVK → USB Mic on PC** | The EVK itself appears as a USB microphone | USB **device/gadget** | PC sees "Microphone (MoilMeet)" |
 | **B-duplex. EVK → USB Mic + Speaker** | The EVK is *both* a USB mic **and** a USB speaker at once | USB **device/gadget** | PC sees "Microphone (MoilMeet)" **and** "Speakers (MoilMeet)" |
 
-> A deep technical write-up is in [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md).
-> The **speaker / full-duplex** addition has its own report: [TECHNICAL_REPORT_SPEAKER.md](TECHNICAL_REPORT_SPEAKER.md).
-> A boot-to-audio runbook (incl. the dropbear/SSH gotcha) is in [HOW_TO_RUN.md](HOW_TO_RUN.md).
+> A deep technical write-up is in [doc/TECHNICAL_REPORT.md](doc/TECHNICAL_REPORT.md).
+> The **speaker / full-duplex** addition has its own report: [doc/TECHNICAL_REPORT_SPEAKER.md](doc/TECHNICAL_REPORT_SPEAKER.md).
+> A boot-to-audio runbook (incl. the dropbear/SSH gotcha) is in [doc/HOW_TO_RUN.md](doc/HOW_TO_RUN.md).
+> The **video-conference / camera** integration has its own report: [doc/TECHNICAL_REPORT_VIDEOCONF.md](doc/TECHNICAL_REPORT_VIDEOCONF.md).
 
 ---
 
@@ -235,7 +236,7 @@ allowed" and is safe to ignore — removing the *devices* is what clears the pre
 
 ## 6. Rebuilding the modules (WSL2)
 
-Only needed if the kernel changes or the modules are lost. Condensed (details in [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md)):
+Only needed if the kernel changes or the modules are lost. Condensed (details in [doc/TECHNICAL_REPORT.md](doc/TECHNICAL_REPORT.md)):
 
 ```bash
 # in WSL2 Ubuntu
@@ -273,9 +274,12 @@ Kernel source: `renesas-rz/rz_linux-cip` @ `rz-6.1-cip43` (SRCREV `6717c06…`).
 ```
 Audio Test RZ v2h/
 ├─ README.md                 ← this document
-├─ TECHNICAL_REPORT.md       ← detailed technical report (Mode A + Mode B)
-├─ TECHNICAL_REPORT_SPEAKER.md ← technical report for the speaker / full-duplex addition
-├─ HOW_TO_RUN.md             ← boot-to-audio runbook (network/SSH + all modes)
+├─ doc/
+│  ├─ TECHNICAL_REPORT.md              ← detailed technical report (Mode A + Mode B)
+│  ├─ TECHNICAL_REPORT_SPEAKER.md      ← technical report for the speaker / full-duplex addition
+│  ├─ TECHNICAL_REPORT_VIDEOCONF.md    ← technical report for the video-conference / camera integration
+│  ├─ TECHNICAL_REPORT_VIDEOCONF_SLIDES.md ← slide-deck source for the above (+ .docx/.pptx exports)
+│  └─ HOW_TO_RUN.md                    ← boot-to-audio runbook (network/SSH + all modes)
 ├─ .gitignore
 │
 ├─ usb-mic-test.sh           ← Mode A CLI (check/load/stream/latency/record/level/stopdev)

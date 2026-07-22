@@ -363,7 +363,7 @@ and buffer/sync via `TLAT`/`SYNC_MIC`/`SYNC_SPK`.
 
 ## 9. Reproduction & Artifacts
 
-All under `C:\habb\projects\Audio Test RZ v2h\` (see [README.md](README.md) for the step-by-step run guide):
+All under `C:\habb\projects\Audio Test RZ v2h\` (see [../README.md](../README.md) for the step-by-step run guide):
 
 | Path | Contents |
 |------|----------|

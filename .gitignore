@@ -9,6 +9,28 @@
 rekaman_*.wav
 gadget-mic-test.wav
 
+# --- Hasil rekaman video conference (bukan sumber) ---
+/recordings/
+*.mkv
+*.avi
+
+# --- Repo terpisah (punya .git sendiri, jangan di-embed) ---
+/video-conference-using-fisheye/
+
+# --- Asset besar (video demo, bukan source code) ---
+/aset/
+
+# --- SDK/runtime pihak ketiga, besar & bisa diunduh ulang (bukan source code) ---
+/onnxruntime-linux-x64-1.24.3/
+/rzv2h_ai-sdk_yocto_recipe_v5.00.tar.gz
+
+# --- Dokumen hasil-generate (Word/PowerPoint) ---
+*.doc
+*.docx
+*.ppt
+*.pptx
+~$*
+
 # --- Log ---
 *.log
 alsaloop.log

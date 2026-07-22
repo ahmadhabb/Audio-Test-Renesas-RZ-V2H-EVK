@@ -1,0 +1,36 @@
+[Unit]
+Description=MoilMeet C++ (Fisheye Video Conference, LVGL/Wayland) on RZ/V2H
+After=weston.service
+Wants=weston.service
+StartLimitIntervalSec=120
+StartLimitBurst=6
+
+[Service]
+Type=simple
+# MUST run as root: the RZ/V2H hardware H.264 decoder (omxh264dec) needs the VPU
+# memory-manager devices /dev/rgnmm* which are root-only (mode 600). As 'weston'
+# the decoder fails "MMI open: Permission denied / mmngr fatal". Root also reaches
+# the Weston socket /run/wayland-0 fine.
+User=root
+WorkingDirectory=/home/weston/moilmeet-cpp
+# Weston exposes the Wayland socket at /run/wayland-0.
+Environment=XDG_RUNTIME_DIR=/run
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=MOILMEET_FULLSCREEN=1
+# Wait up to 30 s for the Wayland socket before starting.
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do [ -S /run/wayland-0 ] && exit 0; sleep 1; done; exit 0'
+ExecStart=/home/weston/moilmeet-cpp/moilmeet_app \
+  --config /home/weston/moilmeet-cpp/assets/views_config.json \
+  --camera-db /home/weston/moilmeet-cpp/assets/camera_parameters.json \
+  --source /home/weston/moilmeet-cpp/assets/hindia.mp4 \
+  --shell
+Restart=always
+RestartSec=5
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=8
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
